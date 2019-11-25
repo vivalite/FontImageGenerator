@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.IO;
@@ -85,38 +86,26 @@ namespace TextImageGenerator
 				var items = groupItem.ToList();
 				string outFolder = AppDomain.CurrentDomain.BaseDirectory + @"Output\" + groupItem.Key;
 
-				string[] imageTextSource = Properties.Resources.SCTOP3K.Split(new[] {Environment.NewLine}, StringSplitOptions.RemoveEmptyEntries);
+				string[] imageTextSource = Properties.Resources.SCTOP3K.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 
-				for (var i = 0; i < items.Count; i++)
+				Parallel.For(0, items.Count, (i) =>
 				{
 					PrivateFontCollection fontCollection = items[i];
 					Font font = new Font(fontCollection.Families[0], 200);
 
-					for (int j = 0; j < imageTextSource.Length; j++)
+					Parallel.For(0, imageTextSource.Length, (j) =>
 					{
 						using (Image textImage = DrawText(imageTextSource[j], font))
 						{
-							using (MemoryStream ms = new MemoryStream())
-							{
-								textImage.Save(ms, ImageFormat.Bmp);
+							Image finalImage = ResizeImageKeepAspectRatio(textImage, 80, 80);
 
-                                PngBitmapEncoder encoder = new PngBitmapEncoder();
-
-								encoder.Frames.Add(BitmapFrame.Create(ms));
-
-								using (FileStream stream = new FileStream(outFolder + $@"\{i}_{font.Name}_{j}_.png", FileMode.Create))
-								{
-									encoder.Save(stream);
-								}
-							}
+							finalImage.Save(outFolder + $@"\{i}_{font.Name}_{j}_.png", ImageFormat.Png);
 						}
-					}
+					});
 
-					
-				}
+				});
+
 			}
-
-
 		}
 
 		public static Image DrawText(string text, Font fontOptional = null, Color? textColorOptional = null, Color? backColorOptional = null, Size? minSizeOptional = null)
@@ -169,6 +158,80 @@ namespace TextImageGenerator
 				}
 			}
 			return retImg;
+		}
+
+		/// <summary>
+		/// Resize an image keeping its aspect ratio (cropping may occur).
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="width"></param>
+		/// <param name="height"></param>
+		/// <returns></returns>
+		public Image ResizeImageKeepAspectRatio(Image source, int width, int height)
+		{
+			Image result = null;
+
+			try
+			{
+				if (source.Width != width || source.Height != height)
+				{
+					// Resize image
+					float sourceRatio = (float)source.Width / source.Height;
+
+					using (var target = new Bitmap(width, height))
+					{
+						using (var g = System.Drawing.Graphics.FromImage(target))
+						{
+							g.CompositingQuality = CompositingQuality.HighQuality;
+							g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+							g.SmoothingMode = SmoothingMode.HighQuality;
+
+							// Scaling
+							float scaling;
+							float scalingY = (float)source.Height / height;
+							float scalingX = (float)source.Width / width;
+							if (scalingX < scalingY) scaling = scalingX; else scaling = scalingY;
+
+							int newWidth = (int)(source.Width / scaling);
+							int newHeight = (int)(source.Height / scaling);
+
+							// Correct float to int rounding
+							if (newWidth < width) newWidth = width;
+							if (newHeight < height) newHeight = height;
+
+							// See if image needs to be cropped
+							int shiftX = 0;
+							int shiftY = 0;
+
+							if (newWidth > width)
+							{
+								shiftX = (newWidth - width) / 2;
+							}
+
+							if (newHeight > height)
+							{
+								shiftY = (newHeight - height) / 2;
+							}
+
+							// Draw image
+							g.DrawImage(source, -shiftX, -shiftY, newWidth, newHeight);
+						}
+
+						result = (Image)target.Clone();
+					}
+				}
+				else
+				{
+					// Image size matched the given size
+					result = (Image)source.Clone();
+				}
+			}
+			catch (Exception)
+			{
+				result = null;
+			}
+
+			return result;
 		}
 
 		private class FontCollections
