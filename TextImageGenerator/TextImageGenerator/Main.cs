@@ -100,14 +100,11 @@ namespace TextImageGenerator
 							{
 								textImage.Save(ms, ImageFormat.Bmp);
 
-								TiffBitmapEncoder encoder = new TiffBitmapEncoder
-								{
-									Compression = TiffCompressOption.Lzw
-								};
+                                PngBitmapEncoder encoder = new PngBitmapEncoder();
 
 								encoder.Frames.Add(BitmapFrame.Create(ms));
 
-								using (FileStream stream = new FileStream(outFolder + $@"\{i}_{font.Name}_{j}_.tiff", FileMode.Create))
+								using (FileStream stream = new FileStream(outFolder + $@"\{i}_{font.Name}_{j}_.png", FileMode.Create))
 								{
 									encoder.Save(stream);
 								}
