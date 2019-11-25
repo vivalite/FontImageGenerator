@@ -59,6 +59,9 @@ namespace TextImageGenerator
 		{
 			_fontCollections.Clear();
 
+			int imageWidth = 80;
+			int imageHeight = 80;
+
 			foreach (CheckListFontItem fontItem in checkedListBoxFonts.CheckedItems)
 			{
 				foreach (string fontFile in Directory.GetFiles(fontItem.Path))
@@ -85,8 +88,20 @@ namespace TextImageGenerator
 			{
 				var items = groupItem.ToList();
 				string outFolder = AppDomain.CurrentDomain.BaseDirectory + @"Output\" + groupItem.Key;
+				string[] imageTextSource = { };
 
-				string[] imageTextSource = Properties.Resources.SCTOP3K.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+				if (radioButtonGBK.Checked)
+				{
+					imageTextSource = Properties.Resources.GBK.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+				}
+				else if (radioButtonSC3K.Checked)
+				{
+					imageTextSource = Properties.Resources.SCTOP3K.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+				}
+				else if (radioButtonSCTC3K.Checked)
+				{
+					imageTextSource = (Properties.Resources.SCTOP3K + Properties.Resources.TCTOP3K).Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+				}
 
 				Parallel.For(0, items.Count, (i) =>
 				{
@@ -97,7 +112,7 @@ namespace TextImageGenerator
 					{
 						using (Image textImage = DrawText(imageTextSource[j], font))
 						{
-							Image finalImage = ResizeImageKeepAspectRatio(textImage, 80, 80);
+							Image finalImage = ResizeImageKeepAspectRatio(textImage, imageWidth, imageHeight);
 
 							finalImage.Save(outFolder + $@"\{i}_{font.Name}_{j}_.png", ImageFormat.Png);
 						}

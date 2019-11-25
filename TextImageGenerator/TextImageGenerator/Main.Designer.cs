@@ -30,9 +30,9 @@
 		{
 			this.checkedListBoxFonts = new System.Windows.Forms.CheckedListBox();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
-			this.radioButtonGBK = new System.Windows.Forms.RadioButton();
-			this.radioButtonSC3K = new System.Windows.Forms.RadioButton();
 			this.radioButtonSCTC3K = new System.Windows.Forms.RadioButton();
+			this.radioButtonSC3K = new System.Windows.Forms.RadioButton();
+			this.radioButtonGBK = new System.Windows.Forms.RadioButton();
 			this.buttonStart = new System.Windows.Forms.Button();
 			this.groupBox1.SuspendLayout();
 			this.SuspendLayout();
@@ -58,20 +58,20 @@
 			this.groupBox1.TabStop = false;
 			this.groupBox1.Text = "Generating Group";
 			// 
-			// radioButtonGBK
+			// radioButtonSCTC3K
 			// 
-			this.radioButtonGBK.AutoSize = true;
-			this.radioButtonGBK.Location = new System.Drawing.Point(7, 20);
-			this.radioButtonGBK.Name = "radioButtonGBK";
-			this.radioButtonGBK.Size = new System.Drawing.Size(66, 17);
-			this.radioButtonGBK.TabIndex = 0;
-			this.radioButtonGBK.TabStop = true;
-			this.radioButtonGBK.Text = "Full GBK";
-			this.radioButtonGBK.UseVisualStyleBackColor = true;
+			this.radioButtonSCTC3K.AutoSize = true;
+			this.radioButtonSCTC3K.Location = new System.Drawing.Point(7, 66);
+			this.radioButtonSCTC3K.Name = "radioButtonSCTC3K";
+			this.radioButtonSCTC3K.Size = new System.Drawing.Size(114, 17);
+			this.radioButtonSCTC3K.TabIndex = 2;
+			this.radioButtonSCTC3K.Text = "ST + TC Top 3000";
+			this.radioButtonSCTC3K.UseVisualStyleBackColor = true;
 			// 
 			// radioButtonSC3K
 			// 
 			this.radioButtonSC3K.AutoSize = true;
+			this.radioButtonSC3K.Checked = true;
 			this.radioButtonSC3K.Location = new System.Drawing.Point(7, 43);
 			this.radioButtonSC3K.Name = "radioButtonSC3K";
 			this.radioButtonSC3K.Size = new System.Drawing.Size(88, 17);
@@ -80,16 +80,15 @@
 			this.radioButtonSC3K.Text = "SC Top 3000";
 			this.radioButtonSC3K.UseVisualStyleBackColor = true;
 			// 
-			// radioButtonSCTC3K
+			// radioButtonGBK
 			// 
-			this.radioButtonSCTC3K.AutoSize = true;
-			this.radioButtonSCTC3K.Location = new System.Drawing.Point(7, 66);
-			this.radioButtonSCTC3K.Name = "radioButtonSCTC3K";
-			this.radioButtonSCTC3K.Size = new System.Drawing.Size(114, 17);
-			this.radioButtonSCTC3K.TabIndex = 2;
-			this.radioButtonSCTC3K.TabStop = true;
-			this.radioButtonSCTC3K.Text = "ST + TC Top 3000";
-			this.radioButtonSCTC3K.UseVisualStyleBackColor = true;
+			this.radioButtonGBK.AutoSize = true;
+			this.radioButtonGBK.Location = new System.Drawing.Point(7, 20);
+			this.radioButtonGBK.Name = "radioButtonGBK";
+			this.radioButtonGBK.Size = new System.Drawing.Size(66, 17);
+			this.radioButtonGBK.TabIndex = 0;
+			this.radioButtonGBK.Text = "Full GBK";
+			this.radioButtonGBK.UseVisualStyleBackColor = true;
 			// 
 			// buttonStart
 			// 
