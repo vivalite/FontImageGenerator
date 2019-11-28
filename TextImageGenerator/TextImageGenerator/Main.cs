@@ -75,7 +75,7 @@ namespace TextImageGenerator
 
                     string outFolderTrain = AppDomain.CurrentDomain.BaseDirectory + @"Output\Train\" + fontItem.Text;
                     string outFolderValidate = AppDomain.CurrentDomain.BaseDirectory + @"Output\Validate\" + fontItem.Text;
-                    string outFolderTest = AppDomain.CurrentDomain.BaseDirectory + @"Output\Test";
+                    string outFolderTest = AppDomain.CurrentDomain.BaseDirectory + @"Output\Test\Test_Folder";
 
                     if (Directory.Exists(outFolderTrain))
                     {
@@ -108,7 +108,7 @@ namespace TextImageGenerator
                 var items = groupItem.ToList();
                 string outFolderTrain = AppDomain.CurrentDomain.BaseDirectory + @"Output\Train\" + groupItem.Key;
                 string outFolderValidate = AppDomain.CurrentDomain.BaseDirectory + @"Output\Validate\" + groupItem.Key;
-                string outFolderTest = AppDomain.CurrentDomain.BaseDirectory + @"Output\Test";
+                string outFolderTest = AppDomain.CurrentDomain.BaseDirectory + @"Output\Test\Test_Folder";
 
                 string[] imageTextSource = { };
 
