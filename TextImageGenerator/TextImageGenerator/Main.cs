@@ -18,269 +18,291 @@ using System.Windows.Media.Imaging;
 
 namespace TextImageGenerator
 {
-	public partial class Main : Form
-	{
-		private FontCollections _fontCollections;
+    public partial class Main : Form
+    {
+        private FontCollections _fontCollections;
 
-		public Main()
-		{
-			_fontCollections = new FontCollections();
+        public Main()
+        {
+            _fontCollections = new FontCollections();
 
-			InitializeComponent();
+            InitializeComponent();
 
-			InitControls();
-		}
+            InitControls();
+        }
 
-		private void InitControls()
-		{
-			foreach (string dir in Directory.GetDirectories(AppDomain.CurrentDomain.BaseDirectory + "Fonts"))
-			{
-				checkedListBoxFonts.Items.Add(new CheckListFontItem { Text = Path.GetFileName(dir), Path = dir });
-			}
+        private void InitControls()
+        {
+            foreach (string dir in Directory.GetDirectories(AppDomain.CurrentDomain.BaseDirectory + "Fonts"))
+            {
+                checkedListBoxFonts.Items.Add(new CheckListFontItem { Text = Path.GetFileName(dir), Path = dir });
+            }
 
-		}
+        }
 
-		private struct CheckListFontItem
-		{
-			public string Text;
-			public string Path;
-			public override string ToString()
-			{
-				return Text;
-			}
-		}
+        private struct CheckListFontItem
+        {
+            public string Text;
+            public string Path;
+            public override string ToString()
+            {
+                return Text;
+            }
+        }
 
-		private void buttonStart_Click(object sender, EventArgs e)
-		{
-			StartProcessing();
-		}
+        private void buttonStart_Click(object sender, EventArgs e)
+        {
+            StartProcessing();
+        }
 
-		private void StartProcessing()
-		{
-			_fontCollections.Clear();
+        private void StartProcessing()
+        {
+            _fontCollections.Clear();
 
-			int imageWidth = 80;
-			int imageHeight = 80;
+            int imageWidth = 80;
+            int imageHeight = 80;
 
-			foreach (CheckListFontItem fontItem in checkedListBoxFonts.CheckedItems)
-			{
-				foreach (string fontFile in Directory.GetFiles(fontItem.Path))
-				{
-					_fontCollections.AddFont(fontFile, fontItem.Text);
+            foreach (CheckListFontItem fontItem in checkedListBoxFonts.CheckedItems)
+            {
+                foreach (string fontFile in Directory.GetFiles(fontItem.Path))
+                {
+                    _fontCollections.AddFont(fontFile, fontItem.Text);
 
-					string outFolder = AppDomain.CurrentDomain.BaseDirectory + @"Output\" + fontItem.Text;
+                    string outFolder = AppDomain.CurrentDomain.BaseDirectory + @"Output\" + fontItem.Text;
 
-					if (Directory.Exists(outFolder))
-					{
-						Directory.Delete(outFolder, true);
-					}
+                    if (Directory.Exists(outFolder))
+                    {
+                        Directory.Delete(outFolder, true);
+                    }
 
-					while (Directory.Exists(outFolder))
-					{
-						Thread.Sleep(200);
-					}
+                    if (Directory.Exists(outFolder + "__Test"))
+                    {
+                        Directory.Delete(outFolder + "__Test", true);
+                    }
 
-					Directory.CreateDirectory(outFolder);
-				}
-			}
+                    while (Directory.Exists(outFolder) || Directory.Exists(outFolder + "__Test"))
+                    {
+                        Thread.Sleep(200);
+                    }
 
-			foreach (IGrouping<string, PrivateFontCollection> groupItem in _fontCollections.FontCollection)
-			{
-				var items = groupItem.ToList();
-				string outFolder = AppDomain.CurrentDomain.BaseDirectory + @"Output\" + groupItem.Key;
-				string[] imageTextSource = { };
+                    Directory.CreateDirectory(outFolder);
+                    Directory.CreateDirectory(outFolder + "__Test");
+                }
+            }
 
-				if (radioButtonGBK.Checked)
-				{
-					imageTextSource = Properties.Resources.GBK.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
-				}
-				else if (radioButtonSC3K.Checked)
-				{
-					imageTextSource = Properties.Resources.SCTOP3K.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
-				}
-				else if (radioButtonSCTC3K.Checked)
-				{
-					imageTextSource = (Properties.Resources.SCTOP3K + Properties.Resources.TCTOP3K).Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
-				}
+            foreach (IGrouping<string, PrivateFontCollection> groupItem in _fontCollections.FontCollection)
+            {
+                var items = groupItem.ToList();
+                string outFolder = AppDomain.CurrentDomain.BaseDirectory + @"Output\" + groupItem.Key;
+                string[] imageTextSource = { };
 
-				Parallel.For(0, items.Count, (i) =>
-				{
-					PrivateFontCollection fontCollection = items[i];
-					Font font = new Font(fontCollection.Families[0], 200);
+                if (radioButtonGBK.Checked)
+                {
+                    imageTextSource = Properties.Resources.GBK.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+                }
+                else if (radioButtonSC3K.Checked)
+                {
+                    imageTextSource = Properties.Resources.SCTOP3K.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+                }
+                else if (radioButtonSCTC3K.Checked)
+                {
+                    imageTextSource = (Properties.Resources.SCTOP3K + Properties.Resources.TCTOP3K).Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+                }
 
-					Parallel.For(0, imageTextSource.Length, (j) =>
-					{
-						using (Image textImage = DrawText(imageTextSource[j], font))
-						{
-							Image finalImage = ResizeImageKeepAspectRatio(textImage, imageWidth, imageHeight);
+                Parallel.For(0, items.Count, (i) =>
+                {
+                    PrivateFontCollection fontCollection = items[i];
+                    Font font = new Font(fontCollection.Families[0], 200);
 
-							finalImage.Save(outFolder + $@"\{i}_{font.Name}_{j}_.png", ImageFormat.Png);
-						}
-					});
+                    Parallel.For(0, imageTextSource.Length, (j) =>
+                    {
+                        using (Image textImage = DrawText(imageTextSource[j], font))
+                        {
+                            Image finalImage = ResizeImageKeepAspectRatio(textImage, imageWidth, imageHeight);
 
-				});
+                            finalImage.Save(outFolder + $@"\{i}_{font.Name}_{j}_.png", ImageFormat.Png);
+                        }
+                    });
+                });
 
-			}
-		}
+                if (checkBoxSplitData.Checked)
+                {
+                    string[] generatedFiles = Directory.GetFiles(outFolder);
 
-		public static Image DrawText(string text, Font fontOptional = null, Color? textColorOptional = null, Color? backColorOptional = null, Size? minSizeOptional = null)
-		{
-			Font font = Control.DefaultFont;
-			if (fontOptional != null)
-				font = fontOptional;
+                    if (generatedFiles.Length > 0)
+                    {
+                        string[] testFiles = generatedFiles.OrderBy(x => Guid.NewGuid()).Take((int)(generatedFiles.Length * 0.2)).ToArray();
 
-			Color textColor = Color.Black;
-			if (textColorOptional != null)
-				textColor = (Color)textColorOptional;
+                        foreach (var tfile in testFiles)
+                        {
+                            File.Move(tfile, outFolder + @"__Test\" + Path.GetFileName(tfile));
+                        }
 
-			Color backColor = Color.White;
-			if (backColorOptional != null)
-				backColor = (Color)backColorOptional;
+                    }
 
-			Size minSize = Size.Empty;
-			if (minSizeOptional != null)
-				minSize = (Size)minSizeOptional;
+                }
 
-			//first, create a dummy bitmap just to get a graphics object
-			SizeF textSize;
-			using (Image img = new Bitmap(1, 1))
-			{
-				using (Graphics drawing = Graphics.FromImage(img))
-				{
-					//measure the string to see how big the image needs to be
-					textSize = drawing.MeasureString(text, font);
-					if (!minSize.IsEmpty)
-					{
-						textSize.Width = textSize.Width > minSize.Width ? textSize.Width : minSize.Width;
-						textSize.Height = textSize.Height > minSize.Height ? textSize.Height : minSize.Height;
-					}
-				}
-			}
+            }
+        }
 
-			//create a new image of the right size
-			Image retImg = new Bitmap((int)textSize.Width, (int)textSize.Height);
-			using (var drawing = Graphics.FromImage(retImg))
-			{
-				//paint the background
-				drawing.Clear(backColor);
+        public static Image DrawText(string text, Font fontOptional = null, Color? textColorOptional = null, Color? backColorOptional = null, Size? minSizeOptional = null)
+        {
+            Font font = Control.DefaultFont;
+            if (fontOptional != null)
+                font = fontOptional;
 
-				//create a brush for the text
-				using (Brush textBrush = new SolidBrush(textColor))
-				{
-					drawing.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
-					drawing.DrawString(text, font, textBrush, 0, 0);
-					drawing.Save();
-				}
-			}
-			return retImg;
-		}
+            Color textColor = Color.Black;
+            if (textColorOptional != null)
+                textColor = (Color)textColorOptional;
 
-		/// <summary>
-		/// Resize an image keeping its aspect ratio (cropping may occur).
-		/// </summary>
-		/// <param name="source"></param>
-		/// <param name="width"></param>
-		/// <param name="height"></param>
-		/// <returns></returns>
-		public Image ResizeImageKeepAspectRatio(Image source, int width, int height)
-		{
-			Image result = null;
+            Color backColor = Color.White;
+            if (backColorOptional != null)
+                backColor = (Color)backColorOptional;
 
-			try
-			{
-				if (source.Width != width || source.Height != height)
-				{
-					// Resize image
-					float sourceRatio = (float)source.Width / source.Height;
+            Size minSize = Size.Empty;
+            if (minSizeOptional != null)
+                minSize = (Size)minSizeOptional;
 
-					using (var target = new Bitmap(width, height))
-					{
-						using (var g = System.Drawing.Graphics.FromImage(target))
-						{
-							g.CompositingQuality = CompositingQuality.HighQuality;
-							g.InterpolationMode = InterpolationMode.HighQualityBicubic;
-							g.SmoothingMode = SmoothingMode.HighQuality;
+            //first, create a dummy bitmap just to get a graphics object
+            SizeF textSize;
+            using (Image img = new Bitmap(1, 1))
+            {
+                using (Graphics drawing = Graphics.FromImage(img))
+                {
+                    //measure the string to see how big the image needs to be
+                    textSize = drawing.MeasureString(text, font);
+                    if (!minSize.IsEmpty)
+                    {
+                        textSize.Width = textSize.Width > minSize.Width ? textSize.Width : minSize.Width;
+                        textSize.Height = textSize.Height > minSize.Height ? textSize.Height : minSize.Height;
+                    }
+                }
+            }
 
-							// Scaling
-							float scaling;
-							float scalingY = (float)source.Height / height;
-							float scalingX = (float)source.Width / width;
-							if (scalingX < scalingY) scaling = scalingX; else scaling = scalingY;
+            //create a new image of the right size
+            Image retImg = new Bitmap((int)textSize.Width, (int)textSize.Height);
+            using (var drawing = Graphics.FromImage(retImg))
+            {
+                //paint the background
+                drawing.Clear(backColor);
 
-							int newWidth = (int)(source.Width / scaling);
-							int newHeight = (int)(source.Height / scaling);
+                //create a brush for the text
+                using (Brush textBrush = new SolidBrush(textColor))
+                {
+                    drawing.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+                    drawing.DrawString(text, font, textBrush, 0, 0);
+                    drawing.Save();
+                }
+            }
+            return retImg;
+        }
 
-							// Correct float to int rounding
-							if (newWidth < width) newWidth = width;
-							if (newHeight < height) newHeight = height;
+        /// <summary>
+        /// Resize an image keeping its aspect ratio (cropping may occur).
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <returns></returns>
+        public Image ResizeImageKeepAspectRatio(Image source, int width, int height)
+        {
+            Image result = null;
 
-							// See if image needs to be cropped
-							int shiftX = 0;
-							int shiftY = 0;
+            try
+            {
+                if (source.Width != width || source.Height != height)
+                {
+                    // Resize image
+                    float sourceRatio = (float)source.Width / source.Height;
 
-							if (newWidth > width)
-							{
-								shiftX = (newWidth - width) / 2;
-							}
+                    using (var target = new Bitmap(width, height))
+                    {
+                        using (var g = System.Drawing.Graphics.FromImage(target))
+                        {
+                            g.CompositingQuality = CompositingQuality.HighQuality;
+                            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                            g.SmoothingMode = SmoothingMode.HighQuality;
 
-							if (newHeight > height)
-							{
-								shiftY = (newHeight - height) / 2;
-							}
+                            // Scaling
+                            float scaling;
+                            float scalingY = (float)source.Height / height;
+                            float scalingX = (float)source.Width / width;
+                            if (scalingX < scalingY) scaling = scalingX; else scaling = scalingY;
 
-							// Draw image
-							g.DrawImage(source, -shiftX, -shiftY, newWidth, newHeight);
-						}
+                            int newWidth = (int)(source.Width / scaling);
+                            int newHeight = (int)(source.Height / scaling);
 
-						result = (Image)target.Clone();
-					}
-				}
-				else
-				{
-					// Image size matched the given size
-					result = (Image)source.Clone();
-				}
-			}
-			catch (Exception)
-			{
-				result = null;
-			}
+                            // Correct float to int rounding
+                            if (newWidth < width) newWidth = width;
+                            if (newHeight < height) newHeight = height;
 
-			return result;
-		}
+                            // See if image needs to be cropped
+                            int shiftX = 0;
+                            int shiftY = 0;
 
-		private class FontCollections
-		{
-			private List<KeyValuePair<string, PrivateFontCollection>> _privateFontCollection = new List<KeyValuePair<string, PrivateFontCollection>>();
+                            if (newWidth > width)
+                            {
+                                shiftX = (newWidth - width) / 2;
+                            }
 
-			public ILookup<string, PrivateFontCollection> FontCollection => _privateFontCollection.ToLookup((i) => i.Key, (i) => i.Value);
+                            if (newHeight > height)
+                            {
+                                shiftY = (newHeight - height) / 2;
+                            }
 
-			public void AddFont(string fullFileName, string fontGroupName)
-			{
-				AddFont(File.ReadAllBytes(fullFileName), fontGroupName);
-			}
+                            // Draw image
+                            g.DrawImage(source, -shiftX, -shiftY, newWidth, newHeight);
+                        }
 
-			public void AddFont(byte[] fontBytes, string fontGroupName)
-			{
-				var handle = GCHandle.Alloc(fontBytes, GCHandleType.Pinned);
-				IntPtr pointer = handle.AddrOfPinnedObject();
-				try
-				{
-					PrivateFontCollection pfc = new PrivateFontCollection();
-					pfc.AddMemoryFont(pointer, fontBytes.Length);
+                        result = (Image)target.Clone();
+                    }
+                }
+                else
+                {
+                    // Image size matched the given size
+                    result = (Image)source.Clone();
+                }
+            }
+            catch (Exception)
+            {
+                result = null;
+            }
 
-					_privateFontCollection.Add(new KeyValuePair<string, PrivateFontCollection>(fontGroupName, pfc));
-				}
-				finally
-				{
-					handle.Free();
-				}
-			}
+            return result;
+        }
 
-			public void Clear()
-			{
-				_privateFontCollection.Clear();
-			}
-		}
-	}
+        private class FontCollections
+        {
+            private List<KeyValuePair<string, PrivateFontCollection>> _privateFontCollection = new List<KeyValuePair<string, PrivateFontCollection>>();
+
+            public ILookup<string, PrivateFontCollection> FontCollection => _privateFontCollection.ToLookup((i) => i.Key, (i) => i.Value);
+
+            public void AddFont(string fullFileName, string fontGroupName)
+            {
+                AddFont(File.ReadAllBytes(fullFileName), fontGroupName);
+            }
+
+            public void AddFont(byte[] fontBytes, string fontGroupName)
+            {
+                var handle = GCHandle.Alloc(fontBytes, GCHandleType.Pinned);
+                IntPtr pointer = handle.AddrOfPinnedObject();
+                try
+                {
+                    PrivateFontCollection pfc = new PrivateFontCollection();
+                    pfc.AddMemoryFont(pointer, fontBytes.Length);
+
+                    _privateFontCollection.Add(new KeyValuePair<string, PrivateFontCollection>(fontGroupName, pfc));
+                }
+                finally
+                {
+                    handle.Free();
+                }
+            }
+
+            public void Clear()
+            {
+                _privateFontCollection.Clear();
+            }
+        }
+    }
 }
