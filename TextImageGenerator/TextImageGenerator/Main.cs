@@ -20,6 +20,13 @@ namespace TextImageGenerator
 {
     public partial class Main : Form
     {
+        const int IMG_WIDTH = 80;
+        const int IMG_HIGHT = 80;
+
+        const double VAL_PERCENT = 0.2;
+        const double TEST_PERCENT = 0.2;
+
+
         private FontCollections _fontCollections;
 
         public Main()
@@ -53,14 +60,12 @@ namespace TextImageGenerator
         private void buttonStart_Click(object sender, EventArgs e)
         {
             StartProcessing();
+            MessageBox.Show("Done!");
         }
 
         private void StartProcessing()
         {
             _fontCollections.Clear();
-
-            int imageWidth = 80;
-            int imageHeight = 80;
 
             foreach (CheckListFontItem fontItem in checkedListBoxFonts.CheckedItems)
             {
@@ -68,32 +73,43 @@ namespace TextImageGenerator
                 {
                     _fontCollections.AddFont(fontFile, fontItem.Text);
 
-                    string outFolder = AppDomain.CurrentDomain.BaseDirectory + @"Output\" + fontItem.Text;
+                    string outFolderTrain = AppDomain.CurrentDomain.BaseDirectory + @"Output\Train\" + fontItem.Text;
+                    string outFolderValidate = AppDomain.CurrentDomain.BaseDirectory + @"Output\Validate\" + fontItem.Text;
+                    string outFolderTest = AppDomain.CurrentDomain.BaseDirectory + @"Output\Test\" + fontItem.Text;
 
-                    if (Directory.Exists(outFolder))
+                    if (Directory.Exists(outFolderTrain))
                     {
-                        Directory.Delete(outFolder, true);
+                        Directory.Delete(outFolderTrain, true);
                     }
 
-                    if (Directory.Exists(outFolder + "__Test"))
+                    if (Directory.Exists(outFolderValidate))
                     {
-                        Directory.Delete(outFolder + "__Test", true);
+                        Directory.Delete(outFolderValidate, true);
                     }
 
-                    while (Directory.Exists(outFolder) || Directory.Exists(outFolder + "__Test"))
+                    if (Directory.Exists(outFolderTest))
+                    {
+                        Directory.Delete(outFolderTest, true);
+                    }
+
+                    while (Directory.Exists(outFolderTrain) || Directory.Exists(outFolderValidate) || Directory.Exists(outFolderTest))
                     {
                         Thread.Sleep(200);
                     }
 
-                    Directory.CreateDirectory(outFolder);
-                    Directory.CreateDirectory(outFolder + "__Test");
+                    Directory.CreateDirectory(outFolderTrain);
+                    Directory.CreateDirectory(outFolderValidate);
+                    Directory.CreateDirectory(outFolderTest);
                 }
             }
 
             foreach (IGrouping<string, PrivateFontCollection> groupItem in _fontCollections.FontCollection)
             {
                 var items = groupItem.ToList();
-                string outFolder = AppDomain.CurrentDomain.BaseDirectory + @"Output\" + groupItem.Key;
+                string outFolderTrain = AppDomain.CurrentDomain.BaseDirectory + @"Output\Train\" + groupItem.Key;
+                string outFolderValidate = AppDomain.CurrentDomain.BaseDirectory + @"Output\Validate\" + groupItem.Key;
+                string outFolderTest = AppDomain.CurrentDomain.BaseDirectory + @"Output\Test\" + groupItem.Key;
+
                 string[] imageTextSource = { };
 
                 if (radioButtonGBK.Checked)
@@ -118,26 +134,40 @@ namespace TextImageGenerator
                     {
                         using (Image textImage = DrawText(imageTextSource[j], font))
                         {
-                            Image finalImage = ResizeImageKeepAspectRatio(textImage, imageWidth, imageHeight);
+                            Image finalImage = ResizeImageKeepAspectRatio(textImage, IMG_WIDTH, IMG_HIGHT);
 
-                            finalImage.Save(outFolder + $@"\{i}_{font.Name}_{j}_.png", ImageFormat.Png);
+                            finalImage.Save(outFolderTrain + $@"\{i}_{font.Name}_{j}_.png", ImageFormat.Png);
                         }
                     });
                 });
 
                 if (checkBoxSplitData.Checked)
                 {
-                    string[] generatedFiles = Directory.GetFiles(outFolder);
+                    int numValTake = (int)(Directory.GetFiles(outFolderTrain).Length * VAL_PERCENT);
+                    int numTestTake = (int)(Directory.GetFiles(outFolderTrain).Length * TEST_PERCENT);
+
+                    string[] generatedFiles = Directory.GetFiles(outFolderTrain);
 
                     if (generatedFiles.Length > 0)
                     {
-                        string[] testFiles = generatedFiles.OrderBy(x => Guid.NewGuid()).Take((int)(generatedFiles.Length * 0.2)).ToArray();
+                        string[] testFiles = generatedFiles.OrderBy(x => Guid.NewGuid()).Take((int)(numValTake)).ToArray();
 
                         foreach (var tfile in testFiles)
                         {
-                            File.Move(tfile, outFolder + @"__Test\" + Path.GetFileName(tfile));
+                            File.Move(tfile, outFolderValidate + @"\" + Path.GetFileName(tfile));
                         }
+                    }
 
+                    generatedFiles = Directory.GetFiles(outFolderTrain);
+
+                    if (generatedFiles.Length > 0)
+                    {
+                        string[] testFiles = generatedFiles.OrderBy(x => Guid.NewGuid()).Take((int)(numTestTake)).ToArray();
+
+                        foreach (var tfile in testFiles)
+                        {
+                            File.Move(tfile, outFolderTest + @"\" + Path.GetFileName(tfile));
+                        }
                     }
 
                 }
