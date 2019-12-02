@@ -26,7 +26,7 @@
 		/// Required method for Designer support - do not modify
 		/// the contents of this method with the code editor.
 		/// </summary>
-		private void InitializeComponent()
+		private async void InitializeComponent()
 		{
             this.checkedListBoxFonts = new System.Windows.Forms.CheckedListBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -35,6 +35,10 @@
             this.radioButtonGBK = new System.Windows.Forms.RadioButton();
             this.buttonStart = new System.Windows.Forms.Button();
             this.checkBoxSplitData = new System.Windows.Forms.CheckBox();
+            this.textBoxSelectWords = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.buttonSelectAll = new System.Windows.Forms.Button();
+            this.buttonLoadFont = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -113,11 +117,52 @@
             this.checkBoxSplitData.Text = "Split Data";
             this.checkBoxSplitData.UseVisualStyleBackColor = true;
             // 
+            // textBoxSelectWords
+            // 
+            this.textBoxSelectWords.Location = new System.Drawing.Point(386, 383);
+            this.textBoxSelectWords.Name = "textBoxSelectWords";
+            this.textBoxSelectWords.Size = new System.Drawing.Size(57, 20);
+            this.textBoxSelectWords.TabIndex = 4;
+            this.textBoxSelectWords.Text = "1000";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(306, 386);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(74, 13);
+            this.label1.TabIndex = 5;
+            this.label1.Text = "Select Words:";
+            // 
+            // buttonSelectAll
+            // 
+            this.buttonSelectAll.Location = new System.Drawing.Point(303, 13);
+            this.buttonSelectAll.Name = "buttonSelectAll";
+            this.buttonSelectAll.Size = new System.Drawing.Size(140, 24);
+            this.buttonSelectAll.TabIndex = 6;
+            this.buttonSelectAll.Text = "Select All";
+            this.buttonSelectAll.UseVisualStyleBackColor = true;
+            this.buttonSelectAll.Click += new System.EventHandler(this.buttonSelectAll_Click);
+            // 
+            // buttonLoadFont
+            // 
+            this.buttonLoadFont.Location = new System.Drawing.Point(303, 330);
+            this.buttonLoadFont.Name = "buttonLoadFont";
+            this.buttonLoadFont.Size = new System.Drawing.Size(140, 27);
+            this.buttonLoadFont.TabIndex = 7;
+            this.buttonLoadFont.Text = "Load Fonts";
+            this.buttonLoadFont.UseVisualStyleBackColor = true;
+            this.buttonLoadFont.Click += new System.EventHandler(this.buttonLoadFont_Click);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(455, 617);
+            this.Controls.Add(this.buttonLoadFont);
+            this.Controls.Add(this.buttonSelectAll);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.textBoxSelectWords);
             this.Controls.Add(this.checkBoxSplitData);
             this.Controls.Add(this.buttonStart);
             this.Controls.Add(this.groupBox1);
@@ -144,6 +189,10 @@
 		private System.Windows.Forms.RadioButton radioButtonGBK;
 		private System.Windows.Forms.Button buttonStart;
         private System.Windows.Forms.CheckBox checkBoxSplitData;
+        private System.Windows.Forms.TextBox textBoxSelectWords;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button buttonSelectAll;
+        private System.Windows.Forms.Button buttonLoadFont;
     }
 }
 

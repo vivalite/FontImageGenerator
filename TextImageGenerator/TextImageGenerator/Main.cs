@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace TextImageGenerator
 {
@@ -24,10 +25,11 @@ namespace TextImageGenerator
         const int IMG_HIGHT = 80;
 
         const double VAL_PERCENT = 0.2;
-        const double TEST_PERCENT = 0.2;
-
+        const double TEST_PERCENT = 0.1;
 
         private FontCollections _fontCollections;
+        private Dispatcher _dispatcher = Dispatcher.CurrentDispatcher;
+        private string _windowTitle = "Font Text Generator";
 
         public Main()
         {
@@ -36,10 +38,14 @@ namespace TextImageGenerator
             InitializeComponent();
 
             InitControls();
+
+            this.Text = _windowTitle;
         }
 
         private void InitControls()
         {
+            checkedListBoxFonts.Items.Clear();
+
             foreach (string dir in Directory.GetDirectories(AppDomain.CurrentDomain.BaseDirectory + "Fonts"))
             {
                 checkedListBoxFonts.Items.Add(new CheckListFontItem { Text = Path.GetFileName(dir), Path = dir });
@@ -57,10 +63,19 @@ namespace TextImageGenerator
             }
         }
 
-        private void buttonStart_Click(object sender, EventArgs e)
+        private async void buttonStart_Click(object sender, EventArgs e)
         {
-            StartProcessing();
-            MessageBox.Show("Done!");
+            _dispatcher.Invoke(() =>
+            {
+                buttonStart.Enabled = false;
+            });
+
+            await Task.Run(() => { StartProcessing(); });
+
+            _dispatcher.Invoke(() =>
+            {
+                buttonStart.Enabled = true;
+            });
         }
 
         private void StartProcessing()
@@ -124,6 +139,13 @@ namespace TextImageGenerator
                 {
                     imageTextSource = (Properties.Resources.SCTOP3K + Properties.Resources.TCTOP3K).Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
                 }
+
+                var selectWords = 1000;
+                int.TryParse(textBoxSelectWords.Text, out selectWords);
+
+                imageTextSource = imageTextSource.OrderBy(x => Guid.NewGuid()).Take(selectWords).ToArray();
+
+                _dispatcher.Invoke(() => { this.Text = _windowTitle + " - Currently Working On: " + groupItem.Key; });
 
                 Parallel.For(0, items.Count, (i) =>
                 {
@@ -332,6 +354,41 @@ namespace TextImageGenerator
             public void Clear()
             {
                 _privateFontCollection.Clear();
+            }
+        }
+
+        private void buttonSelectAll_Click(object sender, EventArgs e)
+        {
+            var fontCount = checkedListBoxFonts.Items.Count;
+
+            for (int i = 0; i < fontCount; i++)
+            {
+                checkedListBoxFonts.SetItemChecked(i, true);
+            }
+        }
+
+        private void buttonLoadFont_Click(object sender, EventArgs e)
+        {
+            using (var fbd = new FolderBrowserDialog())
+            {
+                DialogResult result = fbd.ShowDialog();
+
+                if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
+                {
+                    string[] filePaths = Directory.GetFiles(fbd.SelectedPath).Where(s => s.ToLower().EndsWith(".ttf") || s.ToLower().EndsWith(".ttc")).ToArray();
+
+                    foreach (var filePath in filePaths)
+                    {
+                        var fileName = Path.GetFileNameWithoutExtension(filePath);
+                        var fontFolder = AppDomain.CurrentDomain.BaseDirectory + @"Fonts\" + fileName + @"\";
+                        Directory.CreateDirectory(fontFolder);
+                        File.Copy(filePath, fontFolder + Path.GetFileName(filePath));
+
+                    }
+
+                }
+
+                InitControls();
             }
         }
     }
