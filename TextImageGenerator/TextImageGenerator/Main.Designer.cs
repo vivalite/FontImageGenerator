@@ -48,7 +48,7 @@
             this.checkedListBoxFonts.FormattingEnabled = true;
             this.checkedListBoxFonts.Location = new System.Drawing.Point(13, 13);
             this.checkedListBoxFonts.Name = "checkedListBoxFonts";
-            this.checkedListBoxFonts.Size = new System.Drawing.Size(279, 589);
+            this.checkedListBoxFonts.Size = new System.Drawing.Size(504, 589);
             this.checkedListBoxFonts.TabIndex = 0;
             // 
             // groupBox1
@@ -56,7 +56,7 @@
             this.groupBox1.Controls.Add(this.radioButtonSCTC3K);
             this.groupBox1.Controls.Add(this.radioButtonSC3K);
             this.groupBox1.Controls.Add(this.radioButtonGBK);
-            this.groupBox1.Location = new System.Drawing.Point(303, 418);
+            this.groupBox1.Location = new System.Drawing.Point(523, 418);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(147, 98);
             this.groupBox1.TabIndex = 1;
@@ -97,7 +97,7 @@
             // 
             // buttonStart
             // 
-            this.buttonStart.Location = new System.Drawing.Point(303, 554);
+            this.buttonStart.Location = new System.Drawing.Point(523, 554);
             this.buttonStart.Name = "buttonStart";
             this.buttonStart.Size = new System.Drawing.Size(140, 48);
             this.buttonStart.TabIndex = 2;
@@ -110,7 +110,7 @@
             this.checkBoxSplitData.AutoSize = true;
             this.checkBoxSplitData.Checked = true;
             this.checkBoxSplitData.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBoxSplitData.Location = new System.Drawing.Point(310, 522);
+            this.checkBoxSplitData.Location = new System.Drawing.Point(530, 522);
             this.checkBoxSplitData.Name = "checkBoxSplitData";
             this.checkBoxSplitData.Size = new System.Drawing.Size(72, 17);
             this.checkBoxSplitData.TabIndex = 3;
@@ -119,16 +119,16 @@
             // 
             // textBoxSelectWords
             // 
-            this.textBoxSelectWords.Location = new System.Drawing.Point(386, 383);
+            this.textBoxSelectWords.Location = new System.Drawing.Point(606, 383);
             this.textBoxSelectWords.Name = "textBoxSelectWords";
             this.textBoxSelectWords.Size = new System.Drawing.Size(57, 20);
             this.textBoxSelectWords.TabIndex = 4;
-            this.textBoxSelectWords.Text = "1000";
+            this.textBoxSelectWords.Text = "500";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(306, 386);
+            this.label1.Location = new System.Drawing.Point(526, 386);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(74, 13);
             this.label1.TabIndex = 5;
@@ -136,7 +136,7 @@
             // 
             // buttonSelectAll
             // 
-            this.buttonSelectAll.Location = new System.Drawing.Point(303, 13);
+            this.buttonSelectAll.Location = new System.Drawing.Point(523, 13);
             this.buttonSelectAll.Name = "buttonSelectAll";
             this.buttonSelectAll.Size = new System.Drawing.Size(140, 24);
             this.buttonSelectAll.TabIndex = 6;
@@ -146,7 +146,7 @@
             // 
             // buttonLoadFont
             // 
-            this.buttonLoadFont.Location = new System.Drawing.Point(303, 330);
+            this.buttonLoadFont.Location = new System.Drawing.Point(523, 330);
             this.buttonLoadFont.Name = "buttonLoadFont";
             this.buttonLoadFont.Size = new System.Drawing.Size(140, 27);
             this.buttonLoadFont.TabIndex = 7;
@@ -158,7 +158,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(455, 617);
+            this.ClientSize = new System.Drawing.Size(671, 617);
             this.Controls.Add(this.buttonLoadFont);
             this.Controls.Add(this.buttonSelectAll);
             this.Controls.Add(this.label1);

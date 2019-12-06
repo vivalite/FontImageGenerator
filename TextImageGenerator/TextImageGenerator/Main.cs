@@ -188,7 +188,10 @@ namespace TextImageGenerator
 
                         foreach (var tfile in testFiles)
                         {
-                            File.Move(tfile, outFolderTest + @"\" + Path.GetFileName(tfile));
+                            if (!File.Exists(outFolderTest + @"\" + Path.GetFileName(tfile)))
+                            {
+                                File.Move(tfile, outFolderTest + @"\" + Path.GetFileName(tfile));
+                            }
                         }
                     }
 
@@ -375,15 +378,15 @@ namespace TextImageGenerator
 
                 if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(fbd.SelectedPath))
                 {
+                    string fontFolderName = Path.GetFileName(fbd.SelectedPath);
                     string[] filePaths = Directory.GetFiles(fbd.SelectedPath).Where(s => s.ToLower().EndsWith(".ttf") || s.ToLower().EndsWith(".ttc")).ToArray();
 
                     foreach (var filePath in filePaths)
                     {
                         var fileName = Path.GetFileNameWithoutExtension(filePath);
-                        var fontFolder = AppDomain.CurrentDomain.BaseDirectory + @"Fonts\" + fileName + @"\";
+                        var fontFolder = AppDomain.CurrentDomain.BaseDirectory + @"Fonts\" + fontFolderName + "_" + fileName + @"\";
                         Directory.CreateDirectory(fontFolder);
-                        File.Copy(filePath, fontFolder + Path.GetFileName(filePath));
-
+                        File.Copy(filePath, fontFolder + fontFolderName + "_" + Path.GetFileName(filePath));
                     }
 
                 }
