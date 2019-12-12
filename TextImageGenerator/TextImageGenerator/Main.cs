@@ -7,15 +7,27 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using System.Windows.Media;
+using Brush = System.Drawing.Brush;
+using Brushes = System.Drawing.Brushes;
+using Color = System.Drawing.Color;
+using FlowDirection = System.Windows.FlowDirection;
+using FontFamily = System.Windows.Media.FontFamily;
+using PixelFormat = System.Windows.Media.PixelFormat;
+using Point = System.Drawing.Point;
+using Size = System.Drawing.Size;
+
 
 namespace TextImageGenerator
 {
@@ -63,6 +75,44 @@ namespace TextImageGenerator
             }
         }
 
+        private NativeMethods.TEXTMETRICW GetTextMetrics(IDeviceContext dc, Font font)
+        {
+            NativeMethods.TEXTMETRICW result;
+            IntPtr hDC;
+            IntPtr hFont;
+            IntPtr hFontDefault;
+
+            hDC = IntPtr.Zero;
+            hFont = IntPtr.Zero;
+            hFontDefault = IntPtr.Zero;
+
+            try
+            {
+                hDC = dc.GetHdc();
+
+                hFont = font.ToHfont();
+                hFontDefault = NativeMethods.SelectObject(hDC, hFont);
+
+                NativeMethods.GetTextMetrics(hDC, out result);
+            }
+            finally
+            {
+                if (hFontDefault != IntPtr.Zero)
+                {
+                    NativeMethods.SelectObject(hDC, hFontDefault);
+                }
+
+                if (hFont != IntPtr.Zero)
+                {
+                    NativeMethods.DeleteObject(hFont);
+                }
+
+                dc.ReleaseHdc();
+            }
+
+            return result;
+        }
+
         private async void buttonStart_Click(object sender, EventArgs e)
         {
             _dispatcher.Invoke(() =>
@@ -82,40 +132,68 @@ namespace TextImageGenerator
         {
             _fontCollections.Clear();
 
+            DeleteDirectory(AppDomain.CurrentDomain.BaseDirectory + @"Output\");
+            Thread.Sleep(0);
+            if (Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + @"Output\"))
+            {
+                Thread.Sleep(200);
+            }
+
+            //Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + @"Output\");
+            //Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + @"Output\Test\");
+            Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + @"Output\Test\Test_Folder\");
+            if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + @"Output\Test\Test_Folder\"))
+            {
+                Thread.Sleep(200);
+            }
+            Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + @"Output\Train\");
+            if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + @"Output\Train\"))
+            {
+                Thread.Sleep(200);
+            }
+            Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + @"Output\Validate\");
+            if (!Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + @"Output\Validate\"))
+            {
+                Thread.Sleep(200);
+            }
+
+
             foreach (CheckListFontItem fontItem in checkedListBoxFonts.CheckedItems)
             {
                 foreach (string fontFile in Directory.GetFiles(fontItem.Path))
                 {
                     _fontCollections.AddFont(fontFile, fontItem.Text);
 
-                    string outFolderTrain = AppDomain.CurrentDomain.BaseDirectory + @"Output\Train\" + fontItem.Text;
-                    string outFolderValidate = AppDomain.CurrentDomain.BaseDirectory + @"Output\Validate\" + fontItem.Text;
-                    string outFolderTest = AppDomain.CurrentDomain.BaseDirectory + @"Output\Test\Test_Folder";
+                    string outFolderTrain = AppDomain.CurrentDomain.BaseDirectory + @"Output\Train\" + fontItem.Text + @"\";
+                    string outFolderValidate = AppDomain.CurrentDomain.BaseDirectory + @"Output\Validate\" + fontItem.Text + @"\";
 
-                    if (Directory.Exists(outFolderTrain))
-                    {
-                        Directory.Delete(outFolderTrain, true);
-                    }
-
-                    if (Directory.Exists(outFolderValidate))
-                    {
-                        Directory.Delete(outFolderValidate, true);
-                    }
-
-                    if (Directory.Exists(outFolderTest))
-                    {
-                        Directory.Delete(outFolderTest, true);
-                    }
-
-                    while (Directory.Exists(outFolderTrain) || Directory.Exists(outFolderValidate) || Directory.Exists(outFolderTest))
+                    Directory.CreateDirectory(outFolderTrain);
+                    if (!Directory.Exists(outFolderTrain))
                     {
                         Thread.Sleep(200);
                     }
-
-                    Directory.CreateDirectory(outFolderTrain);
                     Directory.CreateDirectory(outFolderValidate);
-                    Directory.CreateDirectory(outFolderTest);
+                    if (!Directory.Exists(outFolderValidate))
+                    {
+                        Thread.Sleep(200);
+                    }
                 }
+            }
+
+            //int fontGroupCounter = 0;
+            string[] imageTextSource = { };
+
+            if (radioButtonGBK.Checked)
+            {
+                imageTextSource = Properties.Resources.GBK.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+            }
+            else if (radioButtonSC3K.Checked)
+            {
+                imageTextSource = Properties.Resources.SCTOP3K.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
+            }
+            else if (radioButtonSCTC3K.Checked)
+            {
+                imageTextSource = (Properties.Resources.SCTOP3K + Properties.Resources.TCTOP3K).Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
             }
 
             foreach (IGrouping<string, PrivateFontCollection> groupItem in _fontCollections.FontCollection)
@@ -125,42 +203,37 @@ namespace TextImageGenerator
                 string outFolderValidate = AppDomain.CurrentDomain.BaseDirectory + @"Output\Validate\" + groupItem.Key;
                 string outFolderTest = AppDomain.CurrentDomain.BaseDirectory + @"Output\Test\Test_Folder";
 
-                string[] imageTextSource = { };
-
-                if (radioButtonGBK.Checked)
-                {
-                    imageTextSource = Properties.Resources.GBK.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
-                }
-                else if (radioButtonSC3K.Checked)
-                {
-                    imageTextSource = Properties.Resources.SCTOP3K.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
-                }
-                else if (radioButtonSCTC3K.Checked)
-                {
-                    imageTextSource = (Properties.Resources.SCTOP3K + Properties.Resources.TCTOP3K).Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).Distinct().ToArray();
-                }
-
                 var selectWords = 1000;
                 int.TryParse(textBoxSelectWords.Text, out selectWords);
 
-                imageTextSource = imageTextSource.OrderBy(x => Guid.NewGuid()).Take(selectWords).ToArray();
+                string[] imageTextSource1 = imageTextSource.OrderBy(x => Guid.NewGuid()).Take(selectWords).ToArray();
 
                 _dispatcher.Invoke(() => { this.Text = _windowTitle + " - Currently Working On: " + groupItem.Key; });
 
-                Parallel.For(0, items.Count, (i) =>
+                //Debug.Print(checkedListBoxFonts.CheckedItems[fontGroupCounter++].ToString());
+
+                Parallel.For(0, items.Count, i =>
                 {
                     PrivateFontCollection fontCollection = items[i];
                     Font font = new Font(fontCollection.Families[0], 200);
 
-                    Parallel.For(0, imageTextSource.Length, (j) =>
-                    {
-                        using (Image textImage = DrawText(imageTextSource[j], font))
-                        {
-                            Image finalImage = ResizeImageKeepAspectRatio(textImage, IMG_WIDTH, IMG_HIGHT);
+                    Graphics g = CreateGraphics();
+                    NativeMethods.TEXTMETRICW textMetrics = GetTextMetrics(g, font);
+                    //Debug.Print("   " + tess.tmCharSet.ToString("X"));
 
-                            finalImage.Save(outFolderTrain + $@"\{i}_{font.Name}_{j}_.png", ImageFormat.Png);
-                        }
-                    });
+                    if (textMetrics.tmCharSet == (byte)NativeMethods.FontCharSet.GB2312_CHARSET)
+                    {
+                        Parallel.For(0, imageTextSource1.Length, j =>
+                        {
+                            using (Image textImage = DrawText(imageTextSource1[j], font))
+                            {
+                                Image finalImage = ResizeImageKeepAspectRatio(textImage, IMG_WIDTH, IMG_HIGHT);
+
+                                finalImage.Save(outFolderTrain + $@"\{i}_{font.Name}_{j}_.png", ImageFormat.Png);
+
+                            }
+                        });
+                    }
                 });
 
                 if (checkBoxSplitData.Checked)
@@ -198,6 +271,44 @@ namespace TextImageGenerator
                 }
 
             }
+
+            string[] allTrainFontFolders = Directory.GetDirectories(AppDomain.CurrentDomain.BaseDirectory + @"Output\Train\");
+
+            foreach (string trainFontFolder in allTrainFontFolders)
+            {
+                if (!Directory.GetFiles(trainFontFolder).Any())
+                {
+                    DeleteDirectory(trainFontFolder);
+                }
+            }
+
+            string[] allValidateFontFolders = Directory.GetDirectories(AppDomain.CurrentDomain.BaseDirectory + @"Output\Validate\");
+
+            foreach (string validateFontFolder in allValidateFontFolders)
+            {
+                if (!Directory.GetFiles(validateFontFolder).Any())
+                {
+                    DeleteDirectory(validateFontFolder);
+                }
+            }
+
+            _dispatcher.Invoke(() => { this.Text = _windowTitle + @" Done!"; });
+        }
+
+        public static List<bool> GetHash(Bitmap bmpSource)
+        {
+            List<bool> lResult = new List<bool>();
+            //create new image with 16x16 pixel
+            Bitmap bmpMin = new Bitmap(bmpSource, new Size(32, 32));
+            for (int j = 0; j < bmpMin.Height; j++)
+            {
+                for (int i = 0; i < bmpMin.Width; i++)
+                {
+                    //reduce colors to true / false                
+                    lResult.Add(bmpMin.GetPixel(i, j).GetBrightness() < 0.5f);
+                }
+            }
+            return lResult;
         }
 
         public static Image DrawText(string text, Font fontOptional = null, Color? textColorOptional = null, Color? backColorOptional = null, Size? minSizeOptional = null)
@@ -392,6 +503,84 @@ namespace TextImageGenerator
                 }
 
                 InitControls();
+            }
+        }
+
+        private void buttonTest_Click(object sender, EventArgs e)
+        {
+            string fontPath = AppDomain.CurrentDomain.BaseDirectory + @"Fonts\HuaKang_华康瘦金体\HuaKang_华康瘦金体.TTC";
+
+
+            Bitmap bmp = new Bitmap(100, 100);
+
+            BitmapImage bitmap = Convert(bmp);
+
+            DrawingVisual visual = new DrawingVisual();
+
+
+            FontFamily fontFamily = new FontFamily(fontPath);
+
+            var ftf = fontFamily.FamilyTypefaces.FirstOrDefault();
+
+
+
+
+            //string testText = "笋"; // No font
+            string testText = "萍"; // Yes
+
+            FormattedText text = new FormattedText(testText, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Verdana"), 100, System.Windows.Media.Brushes.Blue);
+            text.SetFontFamily(fontFamily);
+
+            using (DrawingContext dc = visual.RenderOpen())
+            {
+                dc.DrawImage(bitmap, new Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
+                dc.DrawRectangle(System.Windows.Media.Brushes.White, null, new Rect(new System.Windows.Point(0, 0), new System.Windows.Size(100, 100)));
+                dc.DrawText(text, new System.Windows.Point(10, 10));
+            }
+
+            RenderTargetBitmap rtb = new RenderTargetBitmap(bitmap.PixelWidth, bitmap.PixelHeight, 96, 96, PixelFormats.Pbgra32);
+            rtb.Render(visual);
+
+            PngBitmapEncoder encoder = new PngBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(rtb));
+
+            using (var fileStream = new System.IO.FileStream(@"zzzz.png", System.IO.FileMode.Create))
+            {
+                encoder.Save(fileStream);
+            }
+
+        }
+
+        private BitmapImage Convert(Bitmap src)
+        {
+            MemoryStream ms = new MemoryStream();
+            ((System.Drawing.Bitmap)src).Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
+            BitmapImage image = new BitmapImage();
+            image.BeginInit();
+            ms.Seek(0, SeekOrigin.Begin);
+            image.StreamSource = ms;
+            image.EndInit();
+            return image;
+        }
+
+        private void DeleteDirectory(string path)
+        {
+            foreach (string directory in Directory.GetDirectories(path))
+            {
+                DeleteDirectory(directory);
+            }
+
+            try
+            {
+                Directory.Delete(path, true);
+            }
+            catch (IOException)
+            {
+                Directory.Delete(path, true);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Directory.Delete(path, true);
             }
         }
     }

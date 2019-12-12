@@ -39,6 +39,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.buttonSelectAll = new System.Windows.Forms.Button();
             this.buttonLoadFont = new System.Windows.Forms.Button();
+            this.buttonTest = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -154,11 +155,22 @@
             this.buttonLoadFont.UseVisualStyleBackColor = true;
             this.buttonLoadFont.Click += new System.EventHandler(this.buttonLoadFont_Click);
             // 
+            // buttonTest
+            // 
+            this.buttonTest.Location = new System.Drawing.Point(543, 163);
+            this.buttonTest.Name = "buttonTest";
+            this.buttonTest.Size = new System.Drawing.Size(75, 23);
+            this.buttonTest.TabIndex = 8;
+            this.buttonTest.Text = "buttonTest";
+            this.buttonTest.UseVisualStyleBackColor = true;
+            this.buttonTest.Click += new System.EventHandler(this.buttonTest_Click);
+            // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(671, 617);
+            this.Controls.Add(this.buttonTest);
             this.Controls.Add(this.buttonLoadFont);
             this.Controls.Add(this.buttonSelectAll);
             this.Controls.Add(this.label1);
@@ -193,6 +205,7 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button buttonSelectAll;
         private System.Windows.Forms.Button buttonLoadFont;
+        private System.Windows.Forms.Button buttonTest;
     }
 }
 
