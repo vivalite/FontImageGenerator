@@ -355,7 +355,7 @@ namespace TextImageGenerator
                 //create a brush for the text
                 using (Brush textBrush = new SolidBrush(textColor))
                 {
-                    drawing.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+                    drawing.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixel;
                     drawing.DrawString(text, font, textBrush, 0, 0);
                     drawing.Save();
                 }
