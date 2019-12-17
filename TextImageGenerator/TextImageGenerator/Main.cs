@@ -14,18 +14,15 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.Windows.Media;
+using System.Xml.Schema;
+using OpenCvSharp;
+using OpenCvSharp.Extensions;
 using Brush = System.Drawing.Brush;
-using Brushes = System.Drawing.Brushes;
 using Color = System.Drawing.Color;
-using FlowDirection = System.Windows.FlowDirection;
-using FontFamily = System.Windows.Media.FontFamily;
-using PixelFormat = System.Windows.Media.PixelFormat;
-using Point = System.Drawing.Point;
 using Size = System.Drawing.Size;
 
 
@@ -206,35 +203,44 @@ namespace TextImageGenerator
                 var selectWords = 1000;
                 int.TryParse(textBoxSelectWords.Text, out selectWords);
 
+                var repeat = 1;
+                int.TryParse(textBoxRepeat.Text, out repeat);
+
                 string[] imageTextSource1 = imageTextSource.OrderBy(x => Guid.NewGuid()).Take(selectWords).ToArray();
 
                 _dispatcher.Invoke(() => { this.Text = _windowTitle + " - Currently Working On: " + groupItem.Key; });
 
                 //Debug.Print(checkedListBoxFonts.CheckedItems[fontGroupCounter++].ToString());
 
-                Parallel.For(0, items.Count, i =>
+
+                for (int k = 0; k < repeat; k++)
                 {
-                    PrivateFontCollection fontCollection = items[i];
-                    Font font = new Font(fontCollection.Families[0], 200);
-
-                    Graphics g = CreateGraphics();
-                    NativeMethods.TEXTMETRICW textMetrics = GetTextMetrics(g, font);
-                    //Debug.Print("   " + tess.tmCharSet.ToString("X"));
-
-                    if (textMetrics.tmCharSet == (byte)NativeMethods.FontCharSet.GB2312_CHARSET)
+                    int k2 = k;
+                    Parallel.For(0, items.Count, i =>
                     {
-                        Parallel.For(0, imageTextSource1.Length, j =>
+                        PrivateFontCollection fontCollection = items[i];
+                        Font font = new Font(fontCollection.Families[0], 200);
+
+                        Graphics g = CreateGraphics();
+                        NativeMethods.TEXTMETRICW textMetrics = GetTextMetrics(g, font);
+                        //Debug.Print("   " + tess.tmCharSet.ToString("X"));
+
+                        if (textMetrics.tmCharSet == (byte)NativeMethods.FontCharSet.GB2312_CHARSET)
                         {
-                            using (Image textImage = DrawText(imageTextSource1[j], font))
+                            int k1 = k2;
+                            Parallel.For(0, imageTextSource1.Length, j =>
                             {
-                                Image finalImage = ResizeImageKeepAspectRatio(textImage, IMG_WIDTH, IMG_HIGHT);
+                                using (Image textImage = DrawText(imageTextSource1[j], font))
+                                {
+                                    Image finalImage = ResizeImageKeepAspectRatio(textImage, IMG_WIDTH, IMG_HIGHT);
 
-                                finalImage.Save(outFolderTrain + $@"\{i}_{font.Name}_{j}_.png", ImageFormat.Png);
+                                    finalImage.Save(outFolderTrain + $@"\{i}_{font.Name}_{j}_{k1}.png", ImageFormat.Png);
 
-                            }
-                        });
-                    }
-                });
+                                }
+                            });
+                        }
+                    });
+                }
 
                 if (checkBoxSplitData.Checked)
                 {
@@ -346,11 +352,14 @@ namespace TextImageGenerator
             }
 
             //create a new image of the right size
-            Image retImg = new Bitmap((int)textSize.Width, (int)textSize.Height);
+            Image retImg = GetRandomBackground((int) textSize.Width, (int) textSize.Height, out int foregroundColorCode);   //new Bitmap((int)textSize.Width, (int)textSize.Height);
+            
+            textColor = Color.FromArgb(foregroundColorCode,foregroundColorCode,foregroundColorCode);
+
             using (var drawing = Graphics.FromImage(retImg))
             {
                 //paint the background
-                drawing.Clear(backColor);
+                //drawing.Clear(backColor);
 
                 //create a brush for the text
                 using (Brush textBrush = new SolidBrush(textColor))
@@ -508,48 +517,56 @@ namespace TextImageGenerator
 
         private void buttonTest_Click(object sender, EventArgs e)
         {
-            string fontPath = AppDomain.CurrentDomain.BaseDirectory + @"Fonts\HuaKang_华康瘦金体\HuaKang_华康瘦金体.TTC";
+            
 
 
-            Bitmap bmp = new Bitmap(100, 100);
-
-            BitmapImage bitmap = Convert(bmp);
-
-            DrawingVisual visual = new DrawingVisual();
-
-
-            FontFamily fontFamily = new FontFamily(fontPath);
-
-            var ftf = fontFamily.FamilyTypefaces.FirstOrDefault();
-
-
-
-
-            //string testText = "笋"; // No font
-            string testText = "萍"; // Yes
-
-            FormattedText text = new FormattedText(testText, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, new Typeface("Verdana"), 100, System.Windows.Media.Brushes.Blue);
-            text.SetFontFamily(fontFamily);
-
-            using (DrawingContext dc = visual.RenderOpen())
-            {
-                dc.DrawImage(bitmap, new Rect(0, 0, bitmap.PixelWidth, bitmap.PixelHeight));
-                dc.DrawRectangle(System.Windows.Media.Brushes.White, null, new Rect(new System.Windows.Point(0, 0), new System.Windows.Size(100, 100)));
-                dc.DrawText(text, new System.Windows.Point(10, 10));
-            }
-
-            RenderTargetBitmap rtb = new RenderTargetBitmap(bitmap.PixelWidth, bitmap.PixelHeight, 96, 96, PixelFormats.Pbgra32);
-            rtb.Render(visual);
-
-            PngBitmapEncoder encoder = new PngBitmapEncoder();
-            encoder.Frames.Add(BitmapFrame.Create(rtb));
-
-            using (var fileStream = new System.IO.FileStream(@"zzzz.png", System.IO.FileMode.Create))
-            {
-                encoder.Save(fileStream);
-            }
 
         }
+
+
+        private static Bitmap GetRandomBackground(int width,int height, out int foregroundColorCode)
+        {
+            string backgroundImagesFolder = @"D:\Labelme_train_set\Images\";
+
+            Random rnd = new Random(DateTime.Now.Millisecond);
+            List<string> imageFilePaths = Directory.EnumerateFiles(backgroundImagesFolder, "*.*", SearchOption.AllDirectories).ToList();
+
+            string randomImagePath = imageFilePaths.OrderBy(x => Guid.NewGuid()).Take(1).FirstOrDefault();
+
+            Mat randomImageOriginal = new Mat(randomImagePath); // image in BGR
+
+            Rect cropRect = new Rect(rnd.Next(0, randomImageOriginal.Width - width), rnd.Next(0, randomImageOriginal.Height - height), width, height);
+
+            Mat randomImage = new Mat(randomImageOriginal, cropRect);
+            Mat imgXyz = randomImage.CvtColor(ColorConversionCodes.BGR2XYZ);
+            Mat imgL = imgXyz.Split()[1];
+
+            double resultL2Rgb = imgL.Mean().Val0; // L2 = background mean value
+
+            double resultL2 = resultL2Rgb / 255;
+            resultL2 = resultL2 <= 0.03928 ? resultL2 / 12.92 : Math.Pow((resultL2 + 0.055) / 1.055, 2.4);
+
+            double ratio;
+            double resultL1;
+            do
+            {
+                double c = rnd.Next(0, 255) / 255D;
+                c = c <= 0.03928 ? c / 12.92 : Math.Pow((c + 0.055) / 1.055, 2.4);
+                resultL1 = 0.2126 * c + 0.7152 * c + 0.0722 * c;
+                ratio = (Math.Max(resultL1, resultL2) + 0.05) / (Math.Min(resultL1, resultL2) + 0.05);
+
+            } while (ratio <= 4.5); // cannot be large than 4.5 or will freeze
+
+            double rgbColorCodeL1 = resultL1 <= 0.03928 ? resultL1 * 12.92 : Math.Pow(resultL1, 5 / 12D) * 1.055 - 0.055;
+            rgbColorCodeL1 *= 255; // foreground (text) color code
+
+            foregroundColorCode = (int) rgbColorCodeL1;
+
+            //Debug.Print(resultL1 + " " + resultL2 + " R:"+ ratio + " L1 CODE:" + rgbColorCodeL1 + " L2 CODE:" + resultL2Rgb);
+
+            return randomImage.ToBitmap();
+        }
+
 
         private BitmapImage Convert(Bitmap src)
         {

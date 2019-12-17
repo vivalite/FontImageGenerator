@@ -40,6 +40,8 @@
             this.buttonSelectAll = new System.Windows.Forms.Button();
             this.buttonLoadFont = new System.Windows.Forms.Button();
             this.buttonTest = new System.Windows.Forms.Button();
+            this.label2 = new System.Windows.Forms.Label();
+            this.textBoxRepeat = new System.Windows.Forms.TextBox();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -120,7 +122,7 @@
             // 
             // textBoxSelectWords
             // 
-            this.textBoxSelectWords.Location = new System.Drawing.Point(606, 383);
+            this.textBoxSelectWords.Location = new System.Drawing.Point(606, 361);
             this.textBoxSelectWords.Name = "textBoxSelectWords";
             this.textBoxSelectWords.Size = new System.Drawing.Size(57, 20);
             this.textBoxSelectWords.TabIndex = 4;
@@ -129,7 +131,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(526, 386);
+            this.label1.Location = new System.Drawing.Point(526, 364);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(74, 13);
             this.label1.TabIndex = 5;
@@ -147,7 +149,7 @@
             // 
             // buttonLoadFont
             // 
-            this.buttonLoadFont.Location = new System.Drawing.Point(523, 330);
+            this.buttonLoadFont.Location = new System.Drawing.Point(523, 311);
             this.buttonLoadFont.Name = "buttonLoadFont";
             this.buttonLoadFont.Size = new System.Drawing.Size(140, 27);
             this.buttonLoadFont.TabIndex = 7;
@@ -159,17 +161,36 @@
             // 
             this.buttonTest.Location = new System.Drawing.Point(543, 163);
             this.buttonTest.Name = "buttonTest";
-            this.buttonTest.Size = new System.Drawing.Size(75, 23);
+            this.buttonTest.Size = new System.Drawing.Size(101, 36);
             this.buttonTest.TabIndex = 8;
-            this.buttonTest.Text = "buttonTest";
+            this.buttonTest.Text = "TEST";
             this.buttonTest.UseVisualStyleBackColor = true;
             this.buttonTest.Click += new System.EventHandler(this.buttonTest_Click);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(526, 389);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(45, 13);
+            this.label2.TabIndex = 10;
+            this.label2.Text = "Repeat:";
+            // 
+            // textBoxRepeat
+            // 
+            this.textBoxRepeat.Location = new System.Drawing.Point(606, 386);
+            this.textBoxRepeat.Name = "textBoxRepeat";
+            this.textBoxRepeat.Size = new System.Drawing.Size(57, 20);
+            this.textBoxRepeat.TabIndex = 9;
+            this.textBoxRepeat.Text = "1";
             // 
             // Main
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(671, 617);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.textBoxRepeat);
             this.Controls.Add(this.buttonTest);
             this.Controls.Add(this.buttonLoadFont);
             this.Controls.Add(this.buttonSelectAll);
@@ -206,6 +227,8 @@
         private System.Windows.Forms.Button buttonSelectAll;
         private System.Windows.Forms.Button buttonLoadFont;
         private System.Windows.Forms.Button buttonTest;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox textBoxRepeat;
     }
 }
 
