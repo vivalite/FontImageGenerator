@@ -352,9 +352,9 @@ namespace TextImageGenerator
             }
 
             //create a new image of the right size
-            Image retImg = GetRandomBackground((int) textSize.Width, (int) textSize.Height, out int foregroundColorCode);   //new Bitmap((int)textSize.Width, (int)textSize.Height);
-            
-            textColor = Color.FromArgb(foregroundColorCode,foregroundColorCode,foregroundColorCode);
+            Image retImg = GetRandomBackground((int)textSize.Width, (int)textSize.Height, out int foregroundColorCode);   //new Bitmap((int)textSize.Width, (int)textSize.Height);
+
+            textColor = Color.FromArgb(foregroundColorCode, foregroundColorCode, foregroundColorCode);
 
             using (var drawing = Graphics.FromImage(retImg))
             {
@@ -517,23 +517,28 @@ namespace TextImageGenerator
 
         private void buttonTest_Click(object sender, EventArgs e)
         {
-            
+
 
 
 
         }
 
 
-        private static Bitmap GetRandomBackground(int width,int height, out int foregroundColorCode)
+        private static Bitmap GetRandomBackground(int width, int height, out int foregroundColorCode)
         {
             string backgroundImagesFolder = @"D:\Labelme_train_set\Images\";
 
             Random rnd = new Random(DateTime.Now.Millisecond);
             List<string> imageFilePaths = Directory.EnumerateFiles(backgroundImagesFolder, "*.*", SearchOption.AllDirectories).ToList();
 
-            string randomImagePath = imageFilePaths.OrderBy(x => Guid.NewGuid()).Take(1).FirstOrDefault();
+            Mat randomImageOriginal;
 
-            Mat randomImageOriginal = new Mat(randomImagePath); // image in BGR
+            do
+            {
+                string randomImagePath = imageFilePaths.OrderBy(x => Guid.NewGuid()).Take(1).FirstOrDefault();
+                randomImageOriginal = new Mat(randomImagePath); // image in BGR
+            } while (randomImageOriginal.Width < width || randomImageOriginal.Height < height);
+
 
             Rect cropRect = new Rect(rnd.Next(0, randomImageOriginal.Width - width), rnd.Next(0, randomImageOriginal.Height - height), width, height);
 
@@ -560,7 +565,7 @@ namespace TextImageGenerator
             double rgbColorCodeL1 = resultL1 <= 0.03928 ? resultL1 * 12.92 : Math.Pow(resultL1, 5 / 12D) * 1.055 - 0.055;
             rgbColorCodeL1 *= 255; // foreground (text) color code
 
-            foregroundColorCode = (int) rgbColorCodeL1;
+            foregroundColorCode = (int)rgbColorCodeL1;
 
             //Debug.Print(resultL1 + " " + resultL2 + " R:"+ ratio + " L1 CODE:" + rgbColorCodeL1 + " L2 CODE:" + resultL2Rgb);
 
