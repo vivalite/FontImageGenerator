@@ -301,24 +301,10 @@ namespace TextImageGenerator
             _dispatcher.Invoke(() => { this.Text = _windowTitle + @" Done!"; });
         }
 
-        public static List<bool> GetHash(Bitmap bmpSource)
-        {
-            List<bool> lResult = new List<bool>();
-            //create new image with 16x16 pixel
-            Bitmap bmpMin = new Bitmap(bmpSource, new Size(32, 32));
-            for (int j = 0; j < bmpMin.Height; j++)
-            {
-                for (int i = 0; i < bmpMin.Width; i++)
-                {
-                    //reduce colors to true / false                
-                    lResult.Add(bmpMin.GetPixel(i, j).GetBrightness() < 0.5f);
-                }
-            }
-            return lResult;
-        }
-
         public static Image DrawText(string text, Font fontOptional = null, Color? textColorOptional = null, Color? backColorOptional = null, Size? minSizeOptional = null)
         {
+            Random rnd = new Random(DateTime.Now.Millisecond);
+            
             Font font = Control.DefaultFont;
             if (fontOptional != null)
                 font = fontOptional;
@@ -352,14 +338,20 @@ namespace TextImageGenerator
             }
 
             //create a new image of the right size
-            Image retImg = GetRandomBackground((int)textSize.Width, (int)textSize.Height, out int foregroundColorCode);   //new Bitmap((int)textSize.Width, (int)textSize.Height);
+
+            double scale = 1 + rnd.NextDouble();
+
+            Image retImg = GetRandomBackground((int)(textSize.Width*scale), (int)(textSize.Height*scale), out int foregroundColorCode);   //new Bitmap((int)textSize.Width, (int)textSize.Height);
 
             textColor = Color.FromArgb(foregroundColorCode, foregroundColorCode, foregroundColorCode);
 
-            using (var drawing = Graphics.FromImage(retImg))
+            Bitmap resultImg = new Bitmap((int)(textSize.Width*scale), (int)(textSize.Height*scale));
+
+            using (var drawing = Graphics.FromImage(resultImg))
             {
                 //paint the background
                 //drawing.Clear(backColor);
+                drawing.DrawImage(retImg,0,0);
 
                 //create a brush for the text
                 using (Brush textBrush = new SolidBrush(textColor))
@@ -369,7 +361,7 @@ namespace TextImageGenerator
                     drawing.Save();
                 }
             }
-            return retImg;
+            return resultImg;
         }
 
         /// <summary>
@@ -569,7 +561,7 @@ namespace TextImageGenerator
 
             //Debug.Print(resultL1 + " " + resultL2 + " R:"+ ratio + " L1 CODE:" + rgbColorCodeL1 + " L2 CODE:" + resultL2Rgb);
 
-            return randomImage.ToBitmap();
+            return randomImage.CvtColor(ColorConversionCodes.BGR2GRAY).ToBitmap();
         }
 
 
