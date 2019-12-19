@@ -304,7 +304,7 @@ namespace TextImageGenerator
         public static Image DrawText(string text, Font fontOptional = null, Color? textColorOptional = null, Color? backColorOptional = null, Size? minSizeOptional = null)
         {
             Random rnd = new Random(DateTime.Now.Millisecond);
-            
+
             Font font = Control.DefaultFont;
             if (fontOptional != null)
                 font = fontOptional;
@@ -341,23 +341,30 @@ namespace TextImageGenerator
 
             double scale = 1 + rnd.NextDouble();
 
-            Image retImg = GetRandomBackground((int)(textSize.Width*scale), (int)(textSize.Height*scale), out int foregroundColorCode);   //new Bitmap((int)textSize.Width, (int)textSize.Height);
+            int bgImgWidth = (int)(textSize.Width * scale);
+            int bgImgHeight = (int)(textSize.Height * scale);
+
+            Image retImg = GetRandomBackground(bgImgWidth, bgImgHeight, out int foregroundColorCode);   //new Bitmap((int)textSize.Width, (int)textSize.Height);
 
             textColor = Color.FromArgb(foregroundColorCode, foregroundColorCode, foregroundColorCode);
 
-            Bitmap resultImg = new Bitmap((int)(textSize.Width*scale), (int)(textSize.Height*scale));
+            Bitmap resultImg = new Bitmap(bgImgWidth, bgImgHeight);
 
             using (var drawing = Graphics.FromImage(resultImg))
             {
                 //paint the background
                 //drawing.Clear(backColor);
-                drawing.DrawImage(retImg,0,0);
+                drawing.DrawImage(retImg, 0, 0);
 
                 //create a brush for the text
                 using (Brush textBrush = new SolidBrush(textColor))
                 {
+                    int textXOffset = rnd.Next(bgImgWidth - (int) textSize.Width);
+                    int textYOffset = rnd.Next(bgImgHeight - (int) textSize.Height);
+
+
                     drawing.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixel;
-                    drawing.DrawString(text, font, textBrush, 0, 0);
+                    drawing.DrawString(text, font, textBrush, textXOffset, textYOffset);
                     drawing.Save();
                 }
             }
