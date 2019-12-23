@@ -301,7 +301,7 @@ namespace TextImageGenerator
             _dispatcher.Invoke(() => { this.Text = _windowTitle + @" Done!"; });
         }
 
-        public static Image DrawText(string text, Font fontOptional = null, Color? textColorOptional = null, Color? backColorOptional = null, Size? minSizeOptional = null)
+        public Image DrawText(string text, Font fontOptional = null, Color? textColorOptional = null, Color? backColorOptional = null, Size? minSizeOptional = null)
         {
             Random rnd = new Random(DateTime.Now.Millisecond);
 
@@ -359,8 +359,8 @@ namespace TextImageGenerator
                 //create a brush for the text
                 using (Brush textBrush = new SolidBrush(textColor))
                 {
-                    int textXOffset = rnd.Next(bgImgWidth - (int) textSize.Width);
-                    int textYOffset = rnd.Next(bgImgHeight - (int) textSize.Height);
+                    int textXOffset = rnd.Next(bgImgWidth - (int)textSize.Width);
+                    int textYOffset = rnd.Next(bgImgHeight - (int)textSize.Height);
 
 
                     drawing.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixel;
@@ -517,13 +517,75 @@ namespace TextImageGenerator
         private void buttonTest_Click(object sender, EventArgs e)
         {
 
+            string backgroundImagesFolder = @"D:\Labelme_train_set\Images\";
 
+            Random rnd = new Random(DateTime.Now.Millisecond);
+            List<string> imageFilePaths = Directory.EnumerateFiles(backgroundImagesFolder, "*.*", SearchOption.AllDirectories).ToList();
 
+            Mat randomImageOriginal;
+
+            do
+            {
+                string randomImagePath = imageFilePaths.OrderBy(x => Guid.NewGuid()).Take(1).FirstOrDefault();
+                randomImageOriginal = new Mat(randomImagePath); // image in BGR
+            } while (randomImageOriginal.Width < 200 || randomImageOriginal.Height < 200);
+
+            Rect cropRect = new Rect(rnd.Next(0, randomImageOriginal.Width - 200), rnd.Next(0, randomImageOriginal.Height - 200), 200, 200);
+
+            Mat randomImage = new Mat(randomImageOriginal, cropRect);
+
+            Cv2.ImShow("Original Crop", randomImage);
+
+            Cv2.ImShow("Adjusted", GetRandomBWMat(GetBrightnessContrastAdjustedMat(randomImage, 100, 40), 0.2));
 
         }
 
+        private Mat GetRandomBWMat(Mat img, double chance)
+        {
+            Random rnd = new Random(DateTime.Now.Millisecond);
 
-        private static Bitmap GetRandomBackground(int width, int height, out int foregroundColorCode)
+            double rndNum = rnd.NextDouble();
+
+            if (rndNum < chance)
+            {
+                img = rnd.Next(2) == 1
+                    ? new Mat(new OpenCvSharp.Size(img.Width, img.Height), img.Type(), Scalar.White)
+                    : new Mat(new OpenCvSharp.Size(img.Width, img.Height), img.Type(), Scalar.Black);
+
+                
+            }
+
+            return img;
+        }
+
+        private Mat GetBrightnessContrastAdjustedMat(Mat img, int brightness,  int contrast)
+        {
+
+            brightness = brightness - 100;
+            contrast = contrast - 100;
+
+            double alpha, beta;
+            if (contrast > 0)
+            {
+                double delta = 127f * contrast / 100f;
+                alpha = 255f / (255f - delta * 2);
+                beta = alpha * (brightness - delta);
+            }
+            else
+            {
+                double delta = -128f * contrast / 100;
+                alpha = (256f - delta * 2) / 255f;
+                beta = alpha * brightness + delta;
+            }
+
+            Mat outputImg = new Mat();
+
+            img.ConvertTo(outputImg, MatType.CV_8UC3, alpha, beta);
+
+            return outputImg;
+        }
+
+        private Bitmap GetRandomBackground(int width, int height, out int foregroundColorCode)
         {
             string backgroundImagesFolder = @"D:\Labelme_train_set\Images\";
 
@@ -542,6 +604,9 @@ namespace TextImageGenerator
             Rect cropRect = new Rect(rnd.Next(0, randomImageOriginal.Width - width), rnd.Next(0, randomImageOriginal.Height - height), width, height);
 
             Mat randomImage = new Mat(randomImageOriginal, cropRect);
+
+            randomImage = GetRandomBWMat(GetBrightnessContrastAdjustedMat(randomImage, 100, 40), 0.2);
+
             Mat imgXyz = randomImage.CvtColor(ColorConversionCodes.BGR2XYZ);
             Mat imgL = imgXyz.Split()[1];
 
