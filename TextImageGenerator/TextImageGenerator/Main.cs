@@ -230,12 +230,20 @@ namespace TextImageGenerator
                             int k1 = k2;
                             Parallel.For(0, imageTextSource1.Length, j =>
                             {
-                                using (Image textImage = DrawText(imageTextSource1[j], font))
+                                try
                                 {
-                                    Image finalImage = ResizeImageKeepAspectRatio(textImage, IMG_WIDTH, IMG_HIGHT);
+                                    using (Image textImage = DrawText(imageTextSource1[j], font))
+                                    {
+                                        Image finalImage = ResizeImageKeepAspectRatio(textImage, IMG_WIDTH, IMG_HIGHT);
 
-                                    finalImage.Save(outFolderTrain + $@"\{i}_{font.Name}_{j}_{k1}.png", ImageFormat.Png);
+                                        finalImage.Save(outFolderTrain + $@"\{i}_{font.Name}_{j}_{k1}.png",
+                                            ImageFormat.Png);
 
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Debug.Print(ex.ToString());
                                 }
                             });
                         }
@@ -552,13 +560,13 @@ namespace TextImageGenerator
                     ? new Mat(new OpenCvSharp.Size(img.Width, img.Height), img.Type(), Scalar.White)
                     : new Mat(new OpenCvSharp.Size(img.Width, img.Height), img.Type(), Scalar.Black);
 
-                
+
             }
 
             return img;
         }
 
-        private Mat GetBrightnessContrastAdjustedMat(Mat img, int brightness,  int contrast)
+        private Mat GetBrightnessContrastAdjustedMat(Mat img, int brightness, int contrast)
         {
 
             brightness = brightness - 100;

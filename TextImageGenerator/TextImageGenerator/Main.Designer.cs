@@ -126,7 +126,7 @@
             this.textBoxSelectWords.Name = "textBoxSelectWords";
             this.textBoxSelectWords.Size = new System.Drawing.Size(57, 20);
             this.textBoxSelectWords.TabIndex = 4;
-            this.textBoxSelectWords.Text = "200";
+            this.textBoxSelectWords.Text = "3000";
             // 
             // label1
             // 
@@ -182,7 +182,7 @@
             this.textBoxRepeat.Name = "textBoxRepeat";
             this.textBoxRepeat.Size = new System.Drawing.Size(57, 20);
             this.textBoxRepeat.TabIndex = 9;
-            this.textBoxRepeat.Text = "10";
+            this.textBoxRepeat.Text = "1";
             // 
             // Main
             // 
