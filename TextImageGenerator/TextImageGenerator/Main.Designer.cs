@@ -126,7 +126,7 @@
             this.textBoxSelectWords.Name = "textBoxSelectWords";
             this.textBoxSelectWords.Size = new System.Drawing.Size(57, 20);
             this.textBoxSelectWords.TabIndex = 4;
-            this.textBoxSelectWords.Text = "3000";
+            this.textBoxSelectWords.Text = "1000";
             // 
             // label1
             // 
