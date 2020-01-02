@@ -1,0 +1,2 @@
+python keras_to_tensorflow.py --input_model="all_freezed_vgg19_tf115_best.h5" --output_model="all_freezed_vgg19_tf18.pb"
+python -m tensorflow.python.tools.optimize_for_inference --input all_freezed_vgg19_tf115.pb --output all_freezed_vgg19_tf115.pb --frozen_graph True --input_names vgg19_input --output_names dense_2/Softmax
