@@ -367,9 +367,10 @@ namespace TextImageGenerator
                 //create a brush for the text
                 using (Brush textBrush = new SolidBrush(textColor))
                 {
-                    int textXOffset = rnd.Next(bgImgWidth - (int)textSize.Width);
-                    int textYOffset = rnd.Next(bgImgHeight - (int)textSize.Height);
-
+                    //int textXOffset = rnd.Next(bgImgWidth - (int)textSize.Width);
+                    //int textYOffset = rnd.Next(bgImgHeight - (int)textSize.Height);
+                    int textXOffset = (int)((bgImgWidth / 2) - (textSize.Width / 2));
+                    int textYOffset = (int)((bgImgHeight / 2) - (textSize.Height / 2));
 
                     drawing.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SingleBitPerPixel;
                     drawing.DrawString(text, font, textBrush, textXOffset, textYOffset);
