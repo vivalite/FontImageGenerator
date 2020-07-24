@@ -6,4 +6,4 @@ Also including script to train the model (VGG19 based) and convert to tensorflow
 
 ## Note:
 * Only support GB2312 / simplified Chinese at the moment.
-* Require LabelMe training dataset as the source for background image (http://groups.csail.mit.edu/vision/LabelMe/Benchmarks/spain/training.tar.gz)
+* Require LabelMe training dataset as the source of background image (http://groups.csail.mit.edu/vision/LabelMe/Benchmarks/spain/training.tar.gz)
